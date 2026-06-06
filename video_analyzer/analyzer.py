@@ -10,9 +10,9 @@ from typing import Optional
 class VisionAnalyzer:
     """Analyze video frames using vision LLMs. Supports 4 providers."""
 
-    SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "ollama"]
-
-    def __init__(self, provider: str = "gemini", api_key: str = "", model: Optional[str] = None):
+    """Analyze video frames using vision LLMs. Supports 5 providers."""
+    SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "ollama", "custom"]
+    def __init__(self, provider: str = "gemini", api_key: str = "", model: Optional[str] = None, base_url: Optional[str] = None):
         self.provider = provider.lower()
         if self.provider not in self.SUPPORTED_PROVIDERS:
             raise ValueError(
@@ -22,6 +22,7 @@ class VisionAnalyzer:
 
         self.api_key = api_key
         self.model = model
+        self.base_url = base_url
         self._init_provider()
 
     def _init_provider(self):
@@ -72,6 +73,22 @@ class VisionAnalyzer:
                 )
             self._client = ollama
 
+        elif self.provider == "custom":
+            if not self.base_url:
+                raise RuntimeError(
+                    "Custom provider requires --base-url. "
+                    "Example: --base-url https://api.example.com/v1"
+                )
+            self.model = self.model or "default"
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise RuntimeError(
+                    "openai not installed (needed for custom provider). "
+                    "Install: pip install 'video-ai-analyzer[openai]' or pip install openai"
+                )
+            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
     def analyze_frame(self, image_path: str, prompt: str, context: str = "") -> str:
         """Analyze a single frame with optional context from previous frames."""
         full_prompt = prompt
@@ -86,6 +103,7 @@ class VisionAnalyzer:
             "openai": self._call_openai,
             "anthropic": self._call_anthropic,
             "ollama": self._call_ollama,
+            "custom": self._call_openai,
         }
         return dispatch[self.provider](image_path, full_prompt)
 

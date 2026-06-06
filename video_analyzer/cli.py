@@ -41,9 +41,10 @@ def main():
 @main.command()
 @click.argument("url")
 @click.option("--provider", "-p", default="gemini",
-              type=click.Choice(["gemini", "openai", "anthropic", "ollama"]),
+              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom"]),
               help="Vision LLM provider")
 @click.option("--api-key", "-k", default="", help="API key (or set env variable)")
+@click.option("--base-url", "-b", default="", help="Base URL for custom OpenAI-compatible provider")
 @click.option("--model", "-m", default=None, help="Model name (uses provider default)")
 @click.option("--mode", default="smart",
               type=click.Choice(["smart", "uniform", "both"]),
@@ -62,7 +63,7 @@ def main():
               help="Whisper model size")
 @click.option("--output", "-o", default=None, help="Save results to JSON file")
 @click.option("--keep-frames", is_flag=True, help="Keep extracted frames after analysis")
-def analyze(url, provider, api_key, model, mode, max_frames, interval, scene_threshold,
+def analyze(url, provider, api_key, base_url, model, mode, max_frames, interval, scene_threshold,
             max_height, max_duration, prompt, summarize, chapters, transcribe,
             whisper_model, output, keep_frames):
     """Analyze a video from URL (YouTube, TikTok, Twitter, etc.)."""
@@ -85,7 +86,7 @@ def analyze(url, provider, api_key, model, mode, max_frames, interval, scene_thr
     # Resolve API key
     resolved_key = _get_api_key(provider, api_key)
     if provider != "ollama" and not resolved_key:
-        env_map = {"gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
+        env_map = {"gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY", "custom": "CUSTOM_API_KEY"}
         console.print(f"[red]No API key. Set {env_map.get(provider, '?')} or use --api-key[/red]")
         sys.exit(1)
 
@@ -144,7 +145,7 @@ def analyze(url, provider, api_key, model, mode, max_frames, interval, scene_thr
 
     # Step 4: Analyze frames
     try:
-        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model, base_url=base_url or None)
     except RuntimeError as e:
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
@@ -279,11 +280,12 @@ def transcribe(video_path, model, language, output):
 @main.command()
 @click.argument("image_paths", nargs=-1, type=click.Path(exists=True))
 @click.option("--provider", "-p", default="gemini",
-              type=click.Choice(["gemini", "openai", "anthropic", "ollama"]))
+              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom"]))
 @click.option("--api-key", "-k", default="")
+@click.option("--base-url", "-b", default="", help="Base URL for custom OpenAI-compatible provider")
 @click.option("--model", "-m", default=None)
 @click.option("--prompt", default="Describe this image in detail.")
-def ask(image_paths, provider, api_key, model, prompt):
+def ask(image_paths, provider, api_key, base_url, model, prompt):
     """Ask a question about one or more images."""
     from .analyzer import VisionAnalyzer
 
@@ -293,7 +295,7 @@ def ask(image_paths, provider, api_key, model, prompt):
         sys.exit(1)
 
     try:
-        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model, base_url=base_url or None)
     except RuntimeError as e:
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
@@ -317,6 +319,7 @@ def providers():
         ("openai", "gpt-4o", "OPENAI_API_KEY"),
         ("anthropic", "claude-sonnet-4-20250514", "ANTHROPIC_API_KEY"),
         ("ollama", "llava:13b", "(local, no key needed)"),
+        ("custom", "(any model)", "CUSTOM_API_KEY + --base-url"),
     ]
 
     for name, model, env_var in providers_info:

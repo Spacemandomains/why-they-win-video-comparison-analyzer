@@ -14,6 +14,7 @@ class Config:
     provider: str = "gemini"
     api_key: str = ""
     model: Optional[str] = None
+    base_url: Optional[str] = None
 
     # Extraction settings
     mode: str = "smart"
@@ -48,6 +49,7 @@ class Config:
         "openai": {"model": "gpt-4o", "env_key": "OPENAI_API_KEY"},
         "anthropic": {"model": "claude-sonnet-4-20250514", "env_key": "ANTHROPIC_API_KEY"},
         "ollama": {"model": "llava:13b", "env_key": ""},
+        "custom": {"model": "default", "env_key": "CUSTOM_API_KEY"},
     })
 
     def __post_init__(self):
@@ -84,7 +86,7 @@ class Config:
     def validate(self) -> list[str]:
         """Validate config, return list of errors."""
         errors = []
-        if self.provider != "ollama" and not self.api_key:
+        if self.provider not in ("ollama",) and not self.api_key:
             env_key = self.PROVIDER_DEFAULTS.get(self.provider, {}).get("env_key", "")
             errors.append(
                 f"No API key for {self.provider}. "
