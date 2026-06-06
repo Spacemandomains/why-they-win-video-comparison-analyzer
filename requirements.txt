@@ -1,5 +1,18 @@
-yt-dlp>=2024.0.0
-Pillow>=10.0.0
-google-generativeai>=0.5.0
-rich>=13.0.0
-click>=8.0.0
+# Core dependencies (always installed)
+yt-dlp>=2024.0
+Pillow>=10.0
+click>=8.0
+rich>=13.0
+
+# Provider dependencies (install as needed)
+google-generativeai>=0.5   # Gemini
+openai>=1.0                 # OpenAI GPT-4o
+anthropic>=0.20             # Anthropic Claude
+ollama>=0.1                 # Ollama (local)
+
+# Audio transcription
+openai-whisper>=20231117    # Whisper (requires ffmpeg)
+
+# Development
+pytest>=7.0
+pytest-cov>=4.0

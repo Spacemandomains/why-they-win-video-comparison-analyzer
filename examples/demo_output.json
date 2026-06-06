@@ -1,0 +1,61 @@
+{
+  "video": {
+    "title": "Example Video — AI Analysis Demo",
+    "duration": 120.5,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0,
+    "codec": "h264",
+    "has_audio": true,
+    "description": "A demo video showing various scenes",
+    "uploader": "DemoChannel",
+    "upload_date": "20260601",
+    "view_count": 150000,
+    "url": "https://www.youtube.com/watch?v=example"
+  },
+  "transcription": {
+    "text": "Welcome to this tutorial. Today we'll be covering how to build a simple web application from scratch.",
+    "segments": [
+      {"start": 0.0, "end": 3.5, "text": "Welcome to this tutorial."},
+      {"start": 3.5, "end": 8.2, "text": "Today we'll be covering how to build a simple web application from scratch."},
+      {"start": 8.2, "end": 12.0, "text": "Let's start by setting up our development environment."}
+    ],
+    "language": "en",
+    "duration": 120.0
+  },
+  "frames": [
+    {
+      "timestamp": 0.0,
+      "analysis": "Opening scene: A person sits at a desk with a laptop, facing the camera. The background shows a modern home office with bookshelves and plants. Text overlay reads 'Web Dev Tutorial — Part 1'. The person is wearing a casual blue shirt and smiling.",
+      "type": "scene"
+    },
+    {
+      "timestamp": 8.2,
+      "analysis": "Screen recording showing VS Code editor with a new project folder. Terminal is open at the bottom showing npm init commands. The file explorer on the left shows an empty src/ directory. Dark theme with Monokai color scheme.",
+      "type": "scene"
+    },
+    {
+      "timestamp": 25.0,
+      "analysis": "The editor now shows an index.html file with basic HTML5 boilerplate code. The person's hand is visible typing on the keyboard. A browser preview panel on the right shows a blank white page with the heading 'Hello World'.",
+      "type": "scene"
+    },
+    {
+      "timestamp": 45.5,
+      "analysis": "Split screen: left shows CSS code being written with flexbox properties, right shows the browser preview updating in real-time with a responsive layout. The page now has a navigation bar, hero section, and footer.",
+      "type": "scene"
+    },
+    {
+      "timestamp": 90.0,
+      "analysis": "Person back on camera, gesturing while explaining next steps. Text overlay shows 'Next: Adding JavaScript interactivity'. The background has changed slightly — a coffee mug is now visible on the desk.",
+      "type": "scene"
+    }
+  ],
+  "summary": "## Video Summary\n\n**Title/Topic**: Web Development Tutorial — Building a Simple Website from Scratch\n\n**Summary**: This tutorial walks through creating a basic web application starting from an empty project. The presenter begins with a warm introduction at their home office desk, then transitions to screen recording where they initialize a new project with npm. The video covers creating the HTML structure, styling with CSS (including flexbox for responsive layout), and shows the live browser preview updating as code is written.\n\nThe tutorial progresses through three main stages: HTML boilerplate setup, CSS styling with modern layout techniques, and ends with a preview of adding JavaScript interactivity in the next part.\n\n**Key Moments**:\n- 0:00 — Introduction and topic overview\n- 0:08 — Project setup and npm init\n- 0:25 — Writing HTML structure\n- 0:45 — CSS styling with flexbox\n- 1:30 — Preview of next tutorial part\n\n**Visual Style**: Clean screen recordings with dark-themed code editor, occasional face-to-camera segments, text overlays for section titles.\n\n**Key Takeaways**:\n1. Modern web development starts with proper project initialization\n2. HTML5 boilerplate provides a solid foundation\n3. CSS flexbox enables responsive layouts easily\n4. Live preview workflow speeds up development",
+  "chapters": [
+    {"start": 0, "end": 8, "title": "Introduction", "description": "Welcome and topic overview"},
+    {"start": 8, "end": 25, "title": "Project Setup", "description": "Initializing npm and project structure"},
+    {"start": 25, "end": 45, "title": "HTML Structure", "description": "Writing the HTML boilerplate"},
+    {"start": 45, "end": 90, "title": "CSS Styling", "description": "Adding responsive styles with flexbox"},
+    {"start": 90, "end": 120, "title": "Preview & Wrap-up", "description": "Summary and preview of next tutorial"}
+  ]
+}

@@ -1,0 +1,11 @@
+services:
+  video-ai:
+    build: .
+    environment:
+      - GEMINI_API_KEY
+      - OPENAI_API_KEY
+      - ANTHROPIC_API_KEY
+    volumes:
+      - ./output:/app/output
+    entrypoint: ["video-ai"]
+    command: ["--help"]

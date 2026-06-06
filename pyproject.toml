@@ -4,26 +4,70 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "video-ai-analyzer"
-version = "1.0.0"
-description = "AI-powered video understanding — extract frames with ffmpeg, analyze with vision LLMs"
+version = "2.0.0"
+description = "AI-powered video understanding — download, extract, transcribe, and analyze any video"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
+authors = [
+    {name = "0xN404T", email = "builder@0xn404t.dev"},
+]
+keywords = ["video", "ai", "analyzer", "vision", "gemini", "openai", "anthropic", "whisper"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
-    "yt-dlp>=2024.0.0",
-    "Pillow>=10.0.0",
-    "google-generativeai>=0.5.0",
-    "rich>=13.0.0",
-    "click>=8.0.0",
+    "yt-dlp>=2024.0",
+    "Pillow>=10.0",
+    "click>=8.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+gemini = ["google-generativeai>=0.5"]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.20"]
+ollama = ["ollama>=0.1"]
+whisper = ["openai-whisper>=20231117"]
+all = [
+    "google-generativeai>=0.5",
+    "openai>=1.0",
+    "anthropic>=0.20",
+    "ollama>=0.1",
+    "openai-whisper>=20231117",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
 ]
 
 [project.scripts]
 video-ai = "video_analyzer.cli:main"
 
-[project.optional-dependencies]
-openai = ["openai>=1.0.0"]
-all = ["openai>=1.0.0"]
+[project.urls]
+Homepage = "https://github.com/0xN404T/video-ai-analyzer"
+Repository = "https://github.com/0xN404T/video-ai-analyzer"
+Issues = "https://github.com/0xN404T/video-ai-analyzer/issues"
+Changelog = "https://github.com/0xN404T/video-ai-analyzer/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["video_analyzer*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
