@@ -143,7 +143,11 @@ def analyze(url, provider, api_key, model, mode, max_frames, interval, scene_thr
     console.print(f"[green]✓ Extracted {len(frames)} frames ({mode} mode)[/green]")
 
     # Step 4: Analyze frames
-    analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+    try:
+        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+    except RuntimeError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
     console.print(f"[dim]Using {provider} / {analyzer.model}[/dim]")
 
     def progress_fn(current, total, result):
@@ -288,7 +292,11 @@ def ask(image_paths, provider, api_key, model, prompt):
         console.print("[red]No API key.[/red]")
         sys.exit(1)
 
-    analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+    try:
+        analyzer = VisionAnalyzer(provider=provider, api_key=resolved_key, model=model)
+    except RuntimeError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
 
     for img_path in image_paths:
         result = analyzer.analyze_frame(img_path, prompt)

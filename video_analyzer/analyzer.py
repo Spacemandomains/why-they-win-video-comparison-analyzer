@@ -28,24 +28,48 @@ class VisionAnalyzer:
         """Initialize the selected provider client."""
         if self.provider == "gemini":
             self.model = self.model or "gemini-2.0-flash"
-            import google.generativeai as genai
+            try:
+                import google.generativeai as genai
+            except ImportError:
+                raise RuntimeError(
+                    "google-generativeai not installed. "
+                    "Install: pip install 'video-ai-analyzer[gemini]' or pip install google-generativeai"
+                )
             genai.configure(api_key=self.api_key)
             self._genai = genai
             self._model = genai.GenerativeModel(self.model)
 
         elif self.provider == "openai":
             self.model = self.model or "gpt-4o"
-            from openai import OpenAI
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise RuntimeError(
+                    "openai not installed. "
+                    "Install: pip install 'video-ai-analyzer[openai]' or pip install openai"
+                )
             self._client = OpenAI(api_key=self.api_key)
 
         elif self.provider == "anthropic":
             self.model = self.model or "claude-sonnet-4-20250514"
-            import anthropic
+            try:
+                import anthropic
+            except ImportError:
+                raise RuntimeError(
+                    "anthropic not installed. "
+                    "Install: pip install 'video-ai-analyzer[anthropic]' or pip install anthropic"
+                )
             self._client = anthropic.Anthropic(api_key=self.api_key)
 
         elif self.provider == "ollama":
             self.model = self.model or "llava:13b"
-            import ollama
+            try:
+                import ollama
+            except ImportError:
+                raise RuntimeError(
+                    "ollama not installed. "
+                    "Install: pip install 'video-ai-analyzer[ollama]' or pip install ollama"
+                )
             self._client = ollama
 
     def analyze_frame(self, image_path: str, prompt: str, context: str = "") -> str:
