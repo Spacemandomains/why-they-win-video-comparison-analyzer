@@ -50,6 +50,7 @@ class Config:
         "anthropic": {"model": "claude-sonnet-4-20250514", "env_key": "ANTHROPIC_API_KEY"},
         "ollama": {"model": "llava:13b", "env_key": ""},
         "custom": {"model": "default", "env_key": "CUSTOM_API_KEY"},
+        "meta": {"model": "muse-spark-1.3", "env_key": "MODEL_API_KEY", "base_url": "https://api.meta.ai/v1"},
     })
 
     def __post_init__(self):
@@ -62,6 +63,13 @@ class Config:
             env_key = defaults.get("env_key", "")
             if env_key:
                 self.api_key = os.environ.get(env_key, "")
+
+        # Meta provider: fall back to CUSTOM_API_KEY, default to Meta's base URL
+        if self.provider == "meta":
+            if not self.api_key:
+                self.api_key = os.environ.get("CUSTOM_API_KEY", "")
+            if not self.base_url:
+                self.base_url = "https://api.meta.ai/v1"
 
         # Set default model if not specified
         if not self.model:

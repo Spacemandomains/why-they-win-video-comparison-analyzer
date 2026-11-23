@@ -26,9 +26,14 @@ def _get_api_key(provider: str, api_key: str) -> str:
         "gemini": "GEMINI_API_KEY",
         "openai": "OPENAI_API_KEY",
         "anthropic": "ANTHROPIC_API_KEY",
+        "meta": "MODEL_API_KEY",
+        "custom": "CUSTOM_API_KEY",
     }
     env_var = env_map.get(provider, "")
-    return os.environ.get(env_var, "")
+    key = os.environ.get(env_var, "")
+    if provider == "meta" and not key:
+        key = os.environ.get("CUSTOM_API_KEY", "")
+    return key
 
 
 @click.group()
@@ -41,10 +46,10 @@ def main():
 @main.command()
 @click.argument("url")
 @click.option("--provider", "-p", default="gemini",
-              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom"]),
+              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom", "meta"]),
               help="Vision LLM provider")
 @click.option("--api-key", "-k", default="", help="API key (or set env variable)")
-@click.option("--base-url", "-b", default="", help="Base URL for custom OpenAI-compatible provider")
+@click.option("--base-url", "-b", default="", help="Base URL for custom/meta provider (meta defaults to https://api.meta.ai/v1)")
 @click.option("--model", "-m", default=None, help="Model name (uses provider default)")
 @click.option("--mode", default="smart",
               type=click.Choice(["smart", "uniform", "both"]),
@@ -86,7 +91,7 @@ def analyze(url, provider, api_key, base_url, model, mode, max_frames, interval,
     # Resolve API key
     resolved_key = _get_api_key(provider, api_key)
     if provider != "ollama" and not resolved_key:
-        env_map = {"gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY", "custom": "CUSTOM_API_KEY"}
+        env_map = {"gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY", "custom": "CUSTOM_API_KEY", "meta": "MODEL_API_KEY"}
         console.print(f"[red]No API key. Set {env_map.get(provider, '?')} or use --api-key[/red]")
         sys.exit(1)
 
@@ -280,9 +285,9 @@ def transcribe(video_path, model, language, output):
 @main.command()
 @click.argument("image_paths", nargs=-1, type=click.Path(exists=True))
 @click.option("--provider", "-p", default="gemini",
-              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom"]))
+              type=click.Choice(["gemini", "openai", "anthropic", "ollama", "custom", "meta"]))
 @click.option("--api-key", "-k", default="")
-@click.option("--base-url", "-b", default="", help="Base URL for custom OpenAI-compatible provider")
+@click.option("--base-url", "-b", default="", help="Base URL for custom/meta provider (meta defaults to https://api.meta.ai/v1)")
 @click.option("--model", "-m", default=None)
 @click.option("--prompt", default="Describe this image in detail.")
 def ask(image_paths, provider, api_key, base_url, model, prompt):
@@ -320,6 +325,7 @@ def providers():
         ("anthropic", "claude-sonnet-4-20250514", "ANTHROPIC_API_KEY"),
         ("ollama", "llava:13b", "(local, no key needed)"),
         ("custom", "(any model)", "CUSTOM_API_KEY + --base-url"),
+        ("meta", "muse-spark-1.3", "MODEL_API_KEY"),
     ]
 
     for name, model, env_var in providers_info:

@@ -11,7 +11,9 @@ class VisionAnalyzer:
     """Analyze video frames using vision LLMs. Supports 4 providers."""
 
     """Analyze video frames using vision LLMs. Supports 5 providers."""
-    SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "ollama", "custom"]
+    SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "ollama", "custom", "meta"]
+    META_BASE_URL = "https://api.meta.ai/v1"
+    META_DEFAULT_MODEL = "muse-spark-1.3"
     def __init__(self, provider: str = "gemini", api_key: str = "", model: Optional[str] = None, base_url: Optional[str] = None):
         self.provider = provider.lower()
         if self.provider not in self.SUPPORTED_PROVIDERS:
@@ -89,6 +91,20 @@ class VisionAnalyzer:
                 )
             self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
+        elif self.provider == "meta":
+            # Meta Model API (dev.meta.ai) - OpenAI-compatible, Bearer key in
+            # MODEL_API_KEY. Muse Spark is multimodal (images/video/audio).
+            self.base_url = self.base_url or self.META_BASE_URL
+            self.model = self.model or self.META_DEFAULT_MODEL
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise RuntimeError(
+                    "openai not installed (needed for meta provider). "
+                    "Install: pip install 'video-ai-analyzer[openai]' or pip install openai"
+                )
+            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
     def analyze_frame(self, image_path: str, prompt: str, context: str = "") -> str:
         """Analyze a single frame with optional context from previous frames."""
         full_prompt = prompt
@@ -104,6 +120,7 @@ class VisionAnalyzer:
             "anthropic": self._call_anthropic,
             "ollama": self._call_ollama,
             "custom": self._call_openai,
+            "meta": self._call_openai,
         }
         return dispatch[self.provider](image_path, full_prompt)
 
