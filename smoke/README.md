@@ -44,7 +44,7 @@ call to Muse Spark; a red job's log ends with `SMOKE FAIL: <repo>: ...`.
 
 | Job | Fork code path exercised | Input |
 | --- | --- | --- |
-| video-ai-analyzer | Its own CLI: `video-ai analyze <url> --provider meta` (first-class `meta` provider, Chat Completions via the OpenAI client) | Wilfred's public video `y6EnqWGYJVU`, capped at 3 frames / 480p |
+| video-ai-analyzer | Its own CLI: `video-ai analyze <url> --provider meta` (first-class `meta` provider, Chat Completions via the OpenAI client) | Direct mp4 URL of the sample clip, capped at 3 frames / 480p — a substitution for the YouTube URL used in runs #1–#3: GitHub runners hit YouTube's bot-wall in the CLI's yt-dlp download step (run #3), and the CLI cannot take a local file (`analyze`'s argument goes straight to yt-dlp, which rejects plain paths as "not a valid URL"; the local-file subcommands never call the AI). A direct media URL is handled by yt-dlp's generic extractor with no bot-wall, and the Meta provider call remains the code under test |
 | mcp-video | `src/mcp_video/meta.py` `analyze_frames_with_meta()` + frames from its own `src/mcp_video/video.py` `extract_uniform_frames()` | 2 frames from a 5-second sample clip |
 | visualizer | `skills/va/scripts/meta_watch.sh` — local-file branch: Meta **Files API** upload (`purpose=user_data`) → Responses API with `input_file` | The 5-second sample mp4 as a local file |
 | youtube-mcp | `src/meta.ts` `analyzeFramesWithMeta()` + frames from its own `src/youtube.ts` `extractFrames()` (the `analyze_with_meta` tool's pipeline) | Frames at 1s and 3s of the local sample mp4, fed via `extractFrames`' own `streamUrl` option — a substitution for the YouTube URL used before run #2: GitHub runners hit YouTube's bot-wall in `yt-dlp` (`getStreamUrl`), which failed run #1 with the real error swallowed. `analyzeFramesWithMeta()` remains the call under test; the driver falls back to the YouTube URL when no local clip is provided, and now prints the full underlying error (message, stack, shell exit code + stderr) on failure |
@@ -113,6 +113,38 @@ argument parser (`file`, `prompt`, `--model`, `--models`,
 change — **not applied; it needs Wilfred's decision** — is one line in
 the vision-tool fork: `vision_proxy.py:2014`, change
 `FAST_TIMEOUT = 4` to `FAST_TIMEOUT = 60`.
+
+### Run #3 — workflow run 45117961646: 6 pass / 1 fail
+
+| Job | Result | Cause |
+| --- | --- | --- |
+| mcp-video | ✅ PASS | — |
+| visualizer | ✅ PASS | — |
+| youtube-mcp | ✅ PASS | — |
+| youtube-digest-videos-mcp | ✅ PASS | — |
+| sight-mcp | ✅ PASS | — |
+| vision-tool | ✅ PASS | Wilfred approved the one-line source change in his vision-tool fork (`FAST_TIMEOUT = 4` → `60` in `vision_proxy.py`), superseding the run #2 note above; the Meta backend now answers inside the timeout |
+| video-ai-analyzer | ❌ FAIL | One step further than run #2: the clean-copy pip build passed and ffmpeg/ffprobe were present, then the CLI's download step failed — yt-dlp on the runner gets YouTube's bot-wall for the input video ("Sign in to confirm you're not a bot. Use --cookies-from-browser or --cookies"). No cookies will be supplied |
+
+Fix applied after run #3, targeting run #4 (harness only — no fork
+source changed):
+
+- **video-ai-analyzer:** the smoke invocation now feeds the CLI the
+  **direct mp4 URL** of the harness sample clip
+  (`https://download.samplelib.com/mp4/sample-5s.mp4`) instead of a
+  YouTube URL, mirroring the youtube-mcp substitution from run #2.
+  A local file path was preferred but is not accepted: `analyze`'s
+  argument goes straight to yt-dlp
+  (`video_analyzer/downloader.py`), which rejects a plain path with
+  `[generic] '<path>' is not a valid URL` (verified locally), and the
+  CLI's local-file subcommands (`extract`, `transcribe`) never call
+  the AI. The direct URL was verified locally through the
+  downloader's exact yt-dlp invocations (metadata dump + the same
+  format selector): yt-dlp's generic extractor downloads the sample
+  cleanly, with no bot-wall. All other flags are unchanged
+  (`--provider meta --max-frames 3 --mode uniform --max-height 480
+  --no-transcribe`), so the first-class Meta provider call remains
+  the code under test.
 
 ## Layout
 
