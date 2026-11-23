@@ -47,13 +47,39 @@ call to Muse Spark; a red job's log ends with `SMOKE FAIL: <repo>: ...`.
 | video-ai-analyzer | Its own CLI: `video-ai analyze <url> --provider meta` (first-class `meta` provider, Chat Completions via the OpenAI client) | Wilfred's public video `y6EnqWGYJVU`, capped at 3 frames / 480p |
 | mcp-video | `src/mcp_video/meta.py` `analyze_frames_with_meta()` + frames from its own `src/mcp_video/video.py` `extract_uniform_frames()` | 2 frames from a 5-second sample clip |
 | visualizer | `skills/va/scripts/meta_watch.sh` — local-file branch: Meta **Files API** upload (`purpose=user_data`) → Responses API with `input_file` | The 5-second sample mp4 as a local file |
-| youtube-mcp | `src/meta.ts` `analyzeFramesWithMeta()` + frames from its own `src/youtube.ts` `extractFrames()` (the `analyze_with_meta` tool's pipeline) | Frames at 1s and 3s of Wilfred's public video `y6EnqWGYJVU` |
+| youtube-mcp | `src/meta.ts` `analyzeFramesWithMeta()` + frames from its own `src/youtube.ts` `extractFrames()` (the `analyze_with_meta` tool's pipeline) | Frames at 1s and 3s of the local sample mp4, fed via `extractFrames`' own `streamUrl` option — a substitution for the YouTube URL used before run #2: GitHub runners hit YouTube's bot-wall in `yt-dlp` (`getStreamUrl`), which failed run #1 with the real error swallowed. `analyzeFramesWithMeta()` remains the call under test; the driver falls back to the YouTube URL when no local clip is provided, and now prints the full underlying error (message, stack, shell exit code + stderr) on failure |
 | vision-tool | Its own CLI: `vision_proxy.py <frame> --model "meta/muse-spark-1.3"` → `call_meta()` backend | One frame (1s) of the sample clip |
 | youtube-digest-videos-mcp | `yt_digester/meta.py` `digest_video()` — the exact backend its CLI/server dispatch to when `DIGEST_PROVIDER=meta` (Responses API, `input_video`) | Direct mp4 URL of the sample clip (Meta needs a directly reachable video URL; the repo CLI only accepts YouTube watch URLs, which Meta may reject) |
 | sight-mcp | The real MCP server (`index.ts`) started with `PROVIDER=meta`, driven over stdio JSON-RPC: `initialize` → `tools/list` → `tools/call analyze_image`, routing through its `ProviderConfig`-resolved Meta endpoint + `ChatService` | One frame (1s) of the sample clip, as a local file |
 
 Sample clip used by several jobs:
 `https://download.samplelib.com/mp4/sample-5s.mp4` (5 s, ~2.8 MB).
+
+## Results
+
+### Run #1 — 2026-11-22 (workflow run 45115744444): 3 pass / 4 fail
+
+| Job | Result | Cause |
+| --- | --- | --- |
+| mcp-video | ✅ PASS | — |
+| visualizer | ✅ PASS | — |
+| youtube-digest-videos-mcp | ✅ PASS | — |
+| video-ai-analyzer | ❌ FAIL | The harness `smoke/` folder sits in this repo's root, so setuptools flat-layout discovery found `['smoke', 'video_analyzer']` and the pip build of the target checkout failed |
+| vision-tool | ❌ FAIL | `ffmpeg: command not found` on the runner during frame extraction |
+| sight-mcp | ❌ FAIL | `ffmpeg: command not found` on the runner (exit 127) |
+| youtube-mcp | ❌ FAIL | `yt-dlp`/YouTube step failed with the real error swallowed — the log showed only "Failed with exit code 1" |
+
+Fixes landed after run #1, targeting run #2 (harness only — no fork
+source was changed):
+
+- **video-ai-analyzer:** its smoke script now pip-installs from a clean
+  copy of the target checkout with `smoke/` and `.github/` removed.
+- **vision-tool / sight-mcp / youtube-mcp:** the workflow jobs now
+  install `ffmpeg` via apt before running the smoke script.
+- **youtube-mcp:** frames are extracted from the local sample mp4 via
+  `extractFrames`' `streamUrl` option (no yt-dlp/YouTube round-trip),
+  and the driver prints the full caught error — message, stack, and
+  any shell exit code/stdout/stderr — before exiting non-zero.
 
 ## Layout
 

@@ -5,7 +5,19 @@
 # MODEL_API_KEY or use --api-key" — the expected clean failure.
 set -euo pipefail
 
-cd "$TARGET_DIR"
+# The harness lives in THIS repo, so the target checkout contains the
+# top-level smoke/ folder next to video_analyzer/. setuptools' flat-layout
+# auto-discovery refuses to build that ("Multiple top-level packages
+# discovered in a flat-layout: ['smoke', 'video_analyzer']" — run #1
+# failure). Install from a clean copy with the harness folders removed;
+# the fork's own packaging is NOT modified.
+CLEAN_DIR="$SMOKE_WORK/vaa-clean"
+rm -rf "$CLEAN_DIR"
+mkdir -p "$CLEAN_DIR"
+cp -a "$TARGET_DIR/." "$CLEAN_DIR/"
+rm -rf "$CLEAN_DIR/smoke" "$CLEAN_DIR/.github"
+
+cd "$CLEAN_DIR"
 python3 -m pip install --quiet --upgrade pip
 # Package deps are light (yt-dlp, Pillow, click, rich); the meta provider
 # branch imports `openai` lazily, so install it explicitly.

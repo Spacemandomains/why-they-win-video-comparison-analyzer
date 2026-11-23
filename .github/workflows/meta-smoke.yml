@@ -130,6 +130,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Run smoke test
         env:
           MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
@@ -161,6 +165,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Run smoke test
         env:
           MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
@@ -223,6 +231,10 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Run smoke test
         env:
           MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
