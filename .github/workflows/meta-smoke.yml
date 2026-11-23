@@ -1,0 +1,238 @@
+name: Meta Smoke Tests
+
+# Manual-only smoke tests for Wilfred's 7 video-analyzer forks.
+# Each job makes the SMALLEST REAL live call to the Meta Model API
+# (Muse Spark 1.3) through that fork's OWN Meta code path, and uploads
+# its log as an artifact. See smoke/README.md for details.
+#
+# Requires the MODEL_API_KEY repository secret:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#   Name: MODEL_API_KEY   Value: <Meta Model API key from dev.meta.ai>
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meta-smoke
+  cancel-in-progress: false
+
+jobs:
+  video-ai-analyzer:
+    name: video-ai-analyzer
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/video-ai-analyzer
+          path: target
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh video-ai-analyzer 2>&1 | tee smoke-video-ai-analyzer.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-video-ai-analyzer
+          path: smoke-video-ai-analyzer.log
+          if-no-files-found: ignore
+
+  mcp-video:
+    name: mcp-video
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/mcp-video
+          path: target
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh mcp-video 2>&1 | tee smoke-mcp-video.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-mcp-video
+          path: smoke-mcp-video.log
+          if-no-files-found: ignore
+
+  visualizer:
+    name: visualizer
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/visualizer
+          path: target
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh visualizer 2>&1 | tee smoke-visualizer.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-visualizer
+          path: smoke-visualizer.log
+          if-no-files-found: ignore
+
+  youtube-mcp:
+    name: youtube-mcp
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/youtube-mcp
+          path: target
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh youtube-mcp 2>&1 | tee smoke-youtube-mcp.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-youtube-mcp
+          path: smoke-youtube-mcp.log
+          if-no-files-found: ignore
+
+  vision-tool:
+    name: vision-tool
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/vision-tool
+          path: target
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh vision-tool 2>&1 | tee smoke-vision-tool.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-vision-tool
+          path: smoke-vision-tool.log
+          if-no-files-found: ignore
+
+  youtube-digest-videos-mcp:
+    name: youtube-digest-videos-mcp
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/youtube-digest-videos-mcp
+          path: target
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh youtube-digest-videos-mcp 2>&1 | tee smoke-youtube-digest-videos-mcp.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-youtube-digest-videos-mcp
+          path: smoke-youtube-digest-videos-mcp.log
+          if-no-files-found: ignore
+
+  sight-mcp:
+    name: sight-mcp
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out harness (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: harness
+      - name: Check out target fork
+        uses: actions/checkout@v4
+        with:
+          repository: Spacemandomains/sight-mcp
+          path: target
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Run smoke test
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          set -o pipefail
+          bash harness/smoke/run_smoke.sh sight-mcp 2>&1 | tee smoke-sight-mcp.log
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-sight-mcp
+          path: smoke-sight-mcp.log
+          if-no-files-found: ignore
