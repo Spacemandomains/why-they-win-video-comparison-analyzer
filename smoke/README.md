@@ -81,6 +81,39 @@ source was changed):
   and the driver prints the full caught error — message, stack, and
   any shell exit code/stdout/stderr — before exiting non-zero.
 
+### Run #2 — workflow run 45116540576: 5 pass / 2 fail
+
+| Job | Result | Cause |
+| --- | --- | --- |
+| mcp-video | ✅ PASS | — |
+| visualizer | ✅ PASS | — |
+| youtube-mcp | ✅ PASS | — |
+| youtube-digest-videos-mcp | ✅ PASS | — |
+| sight-mcp | ✅ PASS | — |
+| video-ai-analyzer | ❌ FAIL | The clean-copy pip build fix worked, but the CLI's own dependency check then failed: `Missing dependencies: ffmpeg, ffprobe` — its workflow job had no ffmpeg install step |
+| vision-tool | ❌ FAIL | ffmpeg fix worked and a frame was extracted; the backend race selected ☆ Meta Muse Spark 1.3 (the only backend with a key; 30/31 skipped), but it failed with `Backend timed out after 4s` |
+
+Fix applied after run #2, targeting run #3 (harness only):
+
+- **video-ai-analyzer:** its workflow job now installs `ffmpeg` via apt
+  before running the smoke script (the same "Install ffmpeg" step the
+  vision-tool / sight-mcp / youtube-mcp jobs already had), which also
+  provides `ffprobe`.
+
+No harness fix was applied for **vision-tool**: the 4-second limit is
+hardcoded in the fork's own source, with no supported configuration.
+In `vision_proxy.py`, `analyze()` sets the local timeout variables at
+lines 2012–2014 — `PER_CALL_TIMEOUT = 12`, `TOTAL_TIMEOUT = 25`,
+`FAST_TIMEOUT = 4` — and line 2029 runs the first sequential backend
+attempts through `_call_with_timeout(fn, FAST_TIMEOUT)`.
+`load_config()` only reads a fixed list of keys (API keys, endpoints,
+`DEFAULT_MODEL`); neither it, `config.json.example`, nor the CLI
+argument parser (`file`, `prompt`, `--model`, `--models`,
+`--refresh-profile`) exposes any timeout setting. The smallest source
+change — **not applied; it needs Wilfred's decision** — is one line in
+the vision-tool fork: `vision_proxy.py:2014`, change
+`FAST_TIMEOUT = 4` to `FAST_TIMEOUT = 60`.
+
 ## Layout
 
 ```
