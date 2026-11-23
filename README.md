@@ -69,6 +69,7 @@ video-ai analyze URL --api-key sk-...
 | OpenAI | Pay-per-use | [platform.openai.com](https://platform.openai.com/api-keys) |
 | Anthropic | Pay-per-use | [console.anthropic.com](https://console.anthropic.com/) |
 | Ollama | **100% Free** (local) | [ollama.com](https://ollama.com) |
+| Meta Model API (Muse Spark 1.3) | Pay-per-use | [dev.meta.ai](https://dev.meta.ai/) |
 
 ## Usage
 
@@ -195,7 +196,7 @@ video-ai providers       # Show provider status
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--provider` | gemini | AI provider: gemini, openai, anthropic, ollama |
+| `--provider` | gemini | AI provider: gemini, openai, anthropic, ollama, custom, meta |
 | `--api-key` | env | API key (or set env variable) |
 | `--model` | auto | Model name (uses provider default) |
 | `--max-frames` | 30 | Maximum frames to extract |
